@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+use Symfony\Component\Console\Application;
+use GetRealTManager\HelloCommand;
+
+require 'vendor/autoload.php';
+
+$app = new Application('GetRealT Manager', '1.0.0');
+
+$app->add(new HelloCommand);
+
+$app->run();
