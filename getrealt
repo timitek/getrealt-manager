@@ -3,11 +3,17 @@
 
 use Symfony\Component\Console\Application;
 use GetRealTManager\HelloCommand;
+use GetRealTManager\NewCommand;
 
-require 'vendor/autoload.php';
+if (file_exists(__DIR__.'/../../autoload.php')) {
+    require __DIR__.'/../../autoload.php';
+} else {
+    require __DIR__.'/vendor/autoload.php';
+}
 
 $app = new Application('GetRealT Manager', '1.0.0');
 
 $app->add(new HelloCommand);
+$app->add(new NewCommand);
 
 $app->run();
