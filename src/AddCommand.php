@@ -104,8 +104,9 @@ class AddCommand extends Command {
             $this->executeCommand($this->composer . ' require yab/quarx', $this->directory);
         }
 
-        $this->intoFile('/config/app.php', 'Package Service Providers...
-         */', PHP_EOL . '        Yab\Quarx\QuarxProvider::class,');
+        $this->intoFile('/config/app.php', 
+                        'Package Service Providers...' . PHP_EOL . '         */',
+                         PHP_EOL . '        Yab\Quarx\QuarxProvider::class,');
 
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Yab\Quarx\QuarxProvider"', $this->directory);
 
