@@ -13,7 +13,6 @@ if (file_exists(__DIR__.'/../../autoload.php')) {
 
 $app = new Application('GetRealT Manager', '1.0.0');
 
-$app->add(new HelloCommand);
 $app->add(new AddCommand);
 
 $app->run();

@@ -67,8 +67,9 @@ class AddCommand extends Command {
 
         $this->processLaravel()
              ->saveSettings($this->settings)
-             ->processQuarx();
-
+             ->processQuarx()
+             ->processGetRETS()
+             ->processGetRealT();
     }
 
     /**
@@ -118,6 +119,58 @@ class AddCommand extends Command {
     }
 
     /**
+     * Installs GetRETS
+     *
+     * @param  string  $directory
+     * @return $this
+     */
+    protected function processGetRETS() {
+        $this->output->writeln(['<comment>====================</comment>',
+                                '<info>Processing GetRETS</info>', 
+                                '<comment>====================</comment>']);
+
+        if (!$this->update) {
+            $this->executeCommand($this->composer . ' require timitek/getrets-laravel', $this->directory);
+        }
+
+        $this->intoFile('/config/app.php', 
+                        'Package Service Providers...' . PHP_EOL . '         */',
+                         PHP_EOL . '        Timitek\GetRETS\Providers\GetRETSServiceProvider::class,');
+
+        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRETS\Providers\GetRETSServiceProvider" --tag=config', $this->directory);
+
+        return $this;
+    }
+
+    /**
+     * Installs GetRealT
+     *
+     * @param  string  $directory
+     * @return $this
+     */
+    protected function processGetRealT() {
+        $this->output->writeln(['<comment>====================</comment>',
+                                '<info>Processing GetRealT</info>', 
+                                '<comment>====================</comment>']);
+
+        if (!$this->update) {
+            $this->executeCommand($this->composer . ' require timitek/getrealt-quarx:dev-master --dev', $this->directory);
+        }
+
+        $this->intoFile('/config/app.php', 
+                        'Package Service Providers...' . PHP_EOL . '         */',
+                         PHP_EOL . '        Timitek\GetRealT\Providers\GetRealTServiceProvider::class,');
+
+        $this->replaceInFile('/config/quarx.php', "'backend-title' => 'Quarx'", "'backend-title' => 'GetRealT'");
+        $this->replaceInFile('/config/quarx.php', "'frontend-theme' => 'default'", "'frontend-theme' => '../../vendor/timitek/getrealt-quarx/resources/views/theme'");
+
+        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=config', $this->directory);
+        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=public', $this->directory);
+
+        return $this;
+    }
+
+    /**
      * Find the position of a string within a file (-1 if not found)
      *
      * @param  string  $file
@@ -136,6 +189,26 @@ class AddCommand extends Command {
                     $inserted = true;
                     file_put_contents($this->directory . $file, substr_replace($fileContents, $newContent, $position + strlen($insertAfter), 0));
                 }
+            }
+        }
+        return $inserted;
+    }
+
+    /**
+     * Replace a string within a file
+     *
+     * @param  string  $file
+     * @param  string  $search
+     * @param  string  $replace
+     * @return $this
+     */
+    protected function replaceInFile($file, $search, $replace) {
+        $inserted = false;
+        if (file_exists($this->directory . $file)) {
+            $fileContents = file_get_contents($this->directory . $file);
+            
+            if (strpos($fileContents, $search) !== FALSE) {
+                file_put_contents($this->directory . $file, str_replace($search, $replace, $fileContents));
             }
         }
         return $inserted;
@@ -213,18 +286,31 @@ class AddCommand extends Command {
         $settings = [];        
         $questionHelper = $this->getHelper('question');
 
-        $currentSettings = array_merge($this->loadCurrentSettings(),
-                                       [
+        $currentSettings = array_merge([
+                                           'APP_NAME' => 'GetRealT',
+                                           'MAIL_FROM_NAME' => 'GetRealT',
                                            'DB_HOST' => '127.0.0.1',
-                                           'DB_PORT' => '3306'                                                
-                                       ]);
+                                           'DB_PORT' => '3306',
+                                           'GETRETS_ENABLE_EXAMPLE' => 'false',
+                                           'GETREALT_SITE_NAME' => $this->name,
+                                           'GETREALT_THEME' => 'united',
+                                       ], $this->loadCurrentSettings());
 
         do {
-            $this->getSetting($currentSettings, 'DB_HOST', 'What is your database host', $settings)
+            $this->getSetting($currentSettings, 'APP_NAME', 'What is the application name you would like assigned for this site', $settings)
+                 ->getSetting($currentSettings, 'MAIL_FROM_ADDRESS', 'For generic e-mails, what e-mail would you like to use as the "from e-mail address"', $settings)
+                 ->getSetting($currentSettings, 'MAIL_FROM_NAME', 'For generic e-mails, what name would you like to use as the "from name"', $settings)
+                 ->getSetting($currentSettings, 'DB_HOST', 'What is your database host', $settings)
                  ->getSetting($currentSettings, 'DB_PORT', 'What is your database port', $settings)
                  ->getSetting($currentSettings, 'DB_DATABASE', 'What is your database name', $settings)
                  ->getSetting($currentSettings, 'DB_USERNAME', 'What is your database username', $settings)
-                 ->getSetting($currentSettings, 'DB_PASSWORD', 'What is your database password', $settings);
+                 ->getSetting($currentSettings, 'DB_PASSWORD', 'What is your database password', $settings)
+                 ->getSetting($currentSettings, 'GETRETS_ENABLE_EXAMPLE', 'Do you want to enable the GetRETS SDK examples for development purposes', $settings)
+                 ->getSetting($currentSettings, 'GETRETS_CUSTOMER_KEY', 'What is the customer key that was assigned to you by timitek', $settings)
+                 ->getSetting($currentSettings, 'GETREALT_SITE_NAME', 'What is the name you would like to use in the sites banner as the site name', $settings)
+                 ->getSetting($currentSettings, 'GETREALT_THEME', 'What is the initial theme you would like to use for the site (this can be easily changed later)', $settings)
+                 ->getSetting($currentSettings, 'GETREALT_MAPS_KEY', 'What is your google maps api key <info>(https://developers.google.com/maps/documentation/javascript/get-api-key)</info>', $settings)
+                 ->getSetting($currentSettings, 'GETREALT_LEADS_EMAIL', 'What e-mail address do you want your leads sent too', $settings);
             $currentSettings = $settings;
         } while(!$this->verifySettings($settings));
         
@@ -313,7 +399,12 @@ class AddCommand extends Command {
         // Convert values to key=value format to be written back into config file
         array_walk($allSettings, function (&$item, $key) {
             if (!is_int($key)) {
-                $item = $key . '=' . $item;
+                $formattedValue = $item;
+                if ((strpos($formattedValue, " ") !== FALSE) && (strpos($formattedValue, '"') === FALSE)) {
+                    $formattedValue = '"' . $formattedValue . '"';
+                } 
+
+                $item = $key . '=' . $formattedValue;
             }
         });
 
