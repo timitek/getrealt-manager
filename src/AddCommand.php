@@ -20,6 +20,7 @@ class AddCommand extends Command {
     private $directory = null;
     private $settings = null;
     private $update = null;
+    private $answerFile = null;
 
     /**
      * Configure the command options.
@@ -31,7 +32,8 @@ class AddCommand extends Command {
             ->setName('add')
             ->setDescription('Create / update a GetRealT site.')
             ->addArgument('name', InputArgument::REQUIRED, 'The name of your site')    
-            ->addOption('update', null, InputOption::VALUE_OPTIONAL, 'update an existing site', false);
+            ->addOption('update', null, InputOption::VALUE_OPTIONAL, 'Update an existing site', false)
+            ->addOption('answerfile', null, InputOption::VALUE_OPTIONAL, 'File to use as default answers for unattended installation', null);
     }
     
     /**
@@ -49,6 +51,7 @@ class AddCommand extends Command {
         $this->directory = getcwd() . '/' . $this->name;
         $this->composer = $this->findComposer();
         $this->update = $input->getOption('update');
+        $this->answerFile = $input->getOption('answerfile');
 
         if ($this->update) {
             $this->verifyExistingSite($this->name);
@@ -296,24 +299,30 @@ class AddCommand extends Command {
                                            'GETREALT_THEME' => 'united',
                                        ], $this->loadCurrentSettings());
 
-        do {
-            $this->getSetting($currentSettings, 'APP_NAME', 'What is the application name you would like assigned for this site', $settings)
-                 ->getSetting($currentSettings, 'MAIL_FROM_ADDRESS', 'For generic e-mails, what e-mail would you like to use as the "from e-mail address"', $settings)
-                 ->getSetting($currentSettings, 'MAIL_FROM_NAME', 'For generic e-mails, what name would you like to use as the "from name"', $settings)
-                 ->getSetting($currentSettings, 'DB_HOST', 'What is your database host', $settings)
-                 ->getSetting($currentSettings, 'DB_PORT', 'What is your database port', $settings)
-                 ->getSetting($currentSettings, 'DB_DATABASE', 'What is your database name', $settings)
-                 ->getSetting($currentSettings, 'DB_USERNAME', 'What is your database username', $settings)
-                 ->getSetting($currentSettings, 'DB_PASSWORD', 'What is your database password', $settings)
-                 ->getSetting($currentSettings, 'GETRETS_ENABLE_EXAMPLE', 'Do you want to enable the GetRETS SDK examples for development purposes', $settings)
-                 ->getSetting($currentSettings, 'GETRETS_CUSTOMER_KEY', 'What is the customer key that was assigned to you by timitek', $settings)
-                 ->getSetting($currentSettings, 'GETREALT_SITE_NAME', 'What is the name you would like to use in the sites banner as the site name', $settings)
-                 ->getSetting($currentSettings, 'GETREALT_THEME', 'What is the initial theme you would like to use for the site (this can be easily changed later)', $settings)
-                 ->getSetting($currentSettings, 'GETREALT_MAPS_KEY', 'What is your google maps api key <info>(https://developers.google.com/maps/documentation/javascript/get-api-key)</info>', $settings)
-                 ->getSetting($currentSettings, 'GETREALT_LEADS_EMAIL', 'What e-mail address do you want your leads sent too', $settings);
-            $currentSettings = $settings;
-        } while(!$this->verifySettings($settings));
-        
+        $answers = $this->loadAnswerFile();
+        if (!empty($answers) && count($answers)) {
+            $settings = array_merge($currentSettings, $answers);
+        }
+        else {
+            do {
+                $this->getSetting($currentSettings, 'APP_NAME', 'What is the application name you would like assigned for this site', $settings)
+                    ->getSetting($currentSettings, 'MAIL_FROM_ADDRESS', 'For generic e-mails, what e-mail would you like to use as the "from e-mail address"', $settings)
+                    ->getSetting($currentSettings, 'MAIL_FROM_NAME', 'For generic e-mails, what name would you like to use as the "from name"', $settings)
+                    ->getSetting($currentSettings, 'DB_HOST', 'What is your database host', $settings)
+                    ->getSetting($currentSettings, 'DB_PORT', 'What is your database port', $settings)
+                    ->getSetting($currentSettings, 'DB_DATABASE', 'What is your database name', $settings)
+                    ->getSetting($currentSettings, 'DB_USERNAME', 'What is your database username', $settings)
+                    ->getSetting($currentSettings, 'DB_PASSWORD', 'What is your database password', $settings)
+                    ->getSetting($currentSettings, 'GETRETS_ENABLE_EXAMPLE', 'Do you want to enable the GetRETS SDK examples for development purposes', $settings)
+                    ->getSetting($currentSettings, 'GETRETS_CUSTOMER_KEY', 'What is the customer key that was assigned to you by timitek', $settings)
+                    ->getSetting($currentSettings, 'GETREALT_SITE_NAME', 'What is the name you would like to use in the sites banner as the site name', $settings)
+                    ->getSetting($currentSettings, 'GETREALT_THEME', 'What is the initial theme you would like to use for the site (this can be easily changed later)', $settings)
+                    ->getSetting($currentSettings, 'GETREALT_MAPS_KEY', 'What is your google maps api key <info>(https://developers.google.com/maps/documentation/javascript/get-api-key)</info>', $settings)
+                    ->getSetting($currentSettings, 'GETREALT_LEADS_EMAIL', 'What e-mail address do you want your leads sent too', $settings);
+                $currentSettings = $settings;
+            } while(!$this->verifySettings($settings));
+        }
+
         return $settings;
     }
 
@@ -378,6 +387,33 @@ class AddCommand extends Command {
                 }
                 else {
                     $settings[] = $line[0];
+                }
+            }
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Loads the answer file to be used for unattended installation
+     *
+     * @return array
+     */
+    protected function loadAnswerFile() {
+        $settings = [];
+
+        if (!empty($this->answerFile)) {
+            if (file_exists($this->answerFile)) {
+                $contents = file($this->answerFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+                // Load the env contents into an associative array
+                foreach ($contents as $value) {
+                    $line = explode('=', $value);
+
+                    // Preserve comments and new lines
+                    if (count($line) > 1) {
+                        $settings[$line[0]] = $line[1];
+                    }
                 }
             }
         }
