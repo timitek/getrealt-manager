@@ -90,6 +90,8 @@ class AddCommand extends Command {
             $this->executeCommand($this->composer . ' create-project --prefer-dist laravel/laravel ' . $this->name, $this->directory);
         }
 
+        $this->replaceInFile('/config/app.php', "'name' => 'Laravel',", "'name' => '" . $this->settings['APP_NAME'] . "',");
+
         return $this;
     }
 
@@ -291,7 +293,14 @@ class AddCommand extends Command {
 
         $currentSettings = array_merge([
                                            'APP_NAME' => 'GetRealT',
+                                           'APP_URL' => 'http://www.getrealt.com',
                                            'MAIL_FROM_NAME' => 'GetRealT',
+                                           'MAIL_DRIVER' => 'sendmail',
+                                           'MAIL_HOST' => 'null',
+                                           'MAIL_PORT' => 'null',
+                                           'MAIL_USERNAME' => 'null',
+                                           'MAIL_PASSWORD' => 'null',
+                                           'MAIL_ENCRYPTION' => 'null',
                                            'DB_HOST' => '127.0.0.1',
                                            'DB_PORT' => '3306',
                                            'GETRETS_ENABLE_EXAMPLE' => 'false',
@@ -306,8 +315,15 @@ class AddCommand extends Command {
         else {
             do {
                 $this->getSetting($currentSettings, 'APP_NAME', 'What is the application name you would like assigned for this site', $settings)
+                    ->getSetting($currentSettings, 'APP_URL', 'What is the primary URL for your website', $settings)
                     ->getSetting($currentSettings, 'MAIL_FROM_ADDRESS', 'For generic e-mails, what e-mail would you like to use as the "from e-mail address"', $settings)
                     ->getSetting($currentSettings, 'MAIL_FROM_NAME', 'For generic e-mails, what name would you like to use as the "from name"', $settings)
+                    ->getSetting($currentSettings, 'MAIL_DRIVER', 'Which mail driver (Supported: "smtp", "sendmail", "mailgun", "mandrill", "ses","sparkpost", "log", "array")', $settings)
+                    ->getSetting($currentSettings, 'MAIL_HOST', 'If you selected SMTP, what is your SMTP host address', $settings)
+                    ->getSetting($currentSettings, 'MAIL_PORT', 'If you selected SMTP, what is your SMTP host port', $settings)
+                    ->getSetting($currentSettings, 'MAIL_USERNAME', 'If you selected SMTP, what is your SMTP username', $settings)
+                    ->getSetting($currentSettings, 'MAIL_PASSWORD', 'If you selected SMTP, what is your SMTP password', $settings)
+                    ->getSetting($currentSettings, 'MAIL_ENCRYPTION', 'What E-Mail encryption protocol should be used', $settings)
                     ->getSetting($currentSettings, 'DB_HOST', 'What is your database host', $settings)
                     ->getSetting($currentSettings, 'DB_PORT', 'What is your database port', $settings)
                     ->getSetting($currentSettings, 'DB_DATABASE', 'What is your database name', $settings)
