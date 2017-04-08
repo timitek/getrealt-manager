@@ -1,4 +1,15 @@
 {
+    "name": "timitek/getrealt-manager",
+    "description": "GetRealT application installer.",
+    "keywords": ["GetRealT", "GetRETS", "Quarx"],
+    "homepage": "https://github.com/timitek/getrets-manager",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Josh WIlliams",
+            "email": "josh@timitek.com"
+        }
+    ],
     "require": {
         "symfony/console": "^3.2",
         "symfony/process": "^3.2"
@@ -7,5 +18,18 @@
         "psr-4": {
             "GetRealTManager\\": "src"
         }
-    }
+    },
+    "support": {
+        "email": "support@timitek.com",
+        "source": "https://github.com/timitek/getrets-laravel"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/timitek/getrets-manager"
+        }
+    ],
+    "bin": [
+        "getrealt"
+    ]
 }

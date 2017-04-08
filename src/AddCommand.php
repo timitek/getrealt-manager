@@ -159,7 +159,7 @@ class AddCommand extends Command {
                                 '<comment>====================</comment>']);
 
         if (!$this->update) {
-            $this->executeCommand($this->composer . ' require timitek/getrealt-quarx:dev-master --dev', $this->directory);
+            $this->executeCommand($this->composer . ' require timitek/getrealt-quarx', $this->directory);
         }
 
         $this->intoFile('/config/app.php', 
