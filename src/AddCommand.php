@@ -73,6 +73,8 @@ class AddCommand extends Command {
              ->processQuarx()
              ->processGetRETS()
              ->processGetRealT();
+
+        $this->executeCommand('php '. $this->directory .'/artisan migrate --step', $this->directory);
     }
 
     /**
@@ -106,13 +108,16 @@ class AddCommand extends Command {
                                 '<info>Processing Quarx</info>', 
                                 '<comment>====================</comment>']);
 
-        if (!$this->update) {
-            $this->executeCommand($this->composer . ' require yab/quarx', $this->directory);
+        if ($this->update) {
+            $this->executeCommand($this->composer . ' update yab/quarx --optimize-autoloader', $this->directory);
         }
+        else {
+            $this->executeCommand($this->composer . ' require yab/quarx', $this->directory);
 
-        $this->intoFile('/config/app.php', 
-                        'Package Service Providers...' . PHP_EOL . '         */',
-                         PHP_EOL . '        Yab\Quarx\QuarxProvider::class,');
+            $this->intoFile('/config/app.php', 
+                            'Package Service Providers...' . PHP_EOL . '         */',
+                            PHP_EOL . '        Yab\Quarx\QuarxProvider::class,');
+        }
 
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Yab\Quarx\QuarxProvider"', $this->directory);
 
@@ -134,13 +139,16 @@ class AddCommand extends Command {
                                 '<info>Processing GetRETS</info>', 
                                 '<comment>====================</comment>']);
 
-        if (!$this->update) {
-            $this->executeCommand($this->composer . ' require timitek/getrets-laravel', $this->directory);
+        if ($this->update) {
+            $this->executeCommand($this->composer . ' update timitek/getrets-laravel --optimize-autoloader', $this->directory);
         }
+        else {
+            $this->executeCommand($this->composer . ' require timitek/getrets-laravel', $this->directory);
 
-        $this->intoFile('/config/app.php', 
-                        'Package Service Providers...' . PHP_EOL . '         */',
-                         PHP_EOL . '        Timitek\GetRETS\Providers\GetRETSServiceProvider::class,');
+            $this->intoFile('/config/app.php', 
+                            'Package Service Providers...' . PHP_EOL . '         */',
+                            PHP_EOL . '        Timitek\GetRETS\Providers\GetRETSServiceProvider::class,');
+        }
 
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRETS\Providers\GetRETSServiceProvider" --tag=config', $this->directory);
 
@@ -158,16 +166,19 @@ class AddCommand extends Command {
                                 '<info>Processing GetRealT</info>', 
                                 '<comment>====================</comment>']);
 
-        if (!$this->update) {
-            $this->executeCommand($this->composer . ' require timitek/getrealt-quarx', $this->directory);
+        if ($this->update) {
+            $this->executeCommand($this->composer . ' update timitek/getrealt-quarx --optimize-autoloader', $this->directory);
         }
+        else {
+            $this->executeCommand($this->composer . ' require timitek/getrealt-quarx', $this->directory);
 
-        $this->intoFile('/config/app.php', 
-                        'Package Service Providers...' . PHP_EOL . '         */',
-                         PHP_EOL . '        Timitek\GetRealT\Providers\GetRealTServiceProvider::class,');
+            $this->intoFile('/config/app.php', 
+                            'Package Service Providers...' . PHP_EOL . '         */',
+                            PHP_EOL . '        Timitek\GetRealT\Providers\GetRealTServiceProvider::class,');
 
-        $this->replaceInFile('/config/quarx.php', "'backend-title' => 'Quarx'", "'backend-title' => 'GetRealT'");
-        $this->replaceInFile('/config/quarx.php', "'frontend-theme' => 'default'", "'frontend-theme' => '../../vendor/timitek/getrealt-quarx/resources/views/theme'");
+            $this->replaceInFile('/config/quarx.php', "'backend-title' => 'Quarx'", "'backend-title' => 'GetRealT'");
+            $this->replaceInFile('/config/quarx.php', "'frontend-theme' => 'default'", "'frontend-theme' => '../../vendor/timitek/getrealt-quarx/resources/views/theme'");
+        }
 
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=config', $this->directory);
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=public', $this->directory);
