@@ -175,13 +175,13 @@ class AddCommand extends Command {
             $this->intoFile('/config/app.php', 
                             'Package Service Providers...' . PHP_EOL . '         */',
                             PHP_EOL . '        Timitek\GetRealT\Providers\GetRealTServiceProvider::class,');
-
-            $this->replaceInFile('/config/quarx.php', "'backend-title' => 'Quarx'", "'backend-title' => 'GetRealT'");
-            $this->replaceInFile('/config/quarx.php', "'frontend-theme' => 'default'", "'frontend-theme' => '../../vendor/timitek/getrealt-quarx/resources/views/theme'");
         }
 
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=config --force', $this->directory);
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=public --force', $this->directory);
+
+        $this->replaceInFile('/config/quarx.php', "'backend-title' => 'Quarx'", "'backend-title' => 'GetRealT'");
+        $this->replaceInFile('/config/quarx.php', "'frontend-theme' => 'default'", "'frontend-theme' => '../../vendor/timitek/getrealt-quarx/resources/views/theme'");
 
         return $this;
     }
