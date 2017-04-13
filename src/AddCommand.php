@@ -32,8 +32,8 @@ class AddCommand extends Command {
             ->setName('add')
             ->setDescription('Create / update a GetRealT site.')
             ->addArgument('name', InputArgument::REQUIRED, 'The name of your site')    
-            ->addOption('update', null, InputOption::VALUE_OPTIONAL, 'Update an existing site', true)
-            ->addOption('answerfile', null, InputOption::VALUE_OPTIONAL, 'File to use as default answers for unattended installation', null);
+            ->addOption('update', 'u', InputOption::VALUE_NONE, 'Update an existing site', null)
+            ->addOption('answerfile', 'a', InputOption::VALUE_OPTIONAL, 'File to use as default answers for unattended installation', null);
     }
     
     /**
