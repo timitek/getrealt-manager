@@ -32,7 +32,7 @@ class AddCommand extends Command {
             ->setName('add')
             ->setDescription('Create / update a GetRealT site.')
             ->addArgument('name', InputArgument::REQUIRED, 'The name of your site')    
-            ->addOption('update', null, InputOption::VALUE_OPTIONAL, 'Update an existing site', false)
+            ->addOption('update', null, InputOption::VALUE_OPTIONAL, 'Update an existing site', true)
             ->addOption('answerfile', null, InputOption::VALUE_OPTIONAL, 'File to use as default answers for unattended installation', null);
     }
     
@@ -119,7 +119,7 @@ class AddCommand extends Command {
                             PHP_EOL . '        Yab\Quarx\QuarxProvider::class,');
         }
 
-        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Yab\Quarx\QuarxProvider"', $this->directory);
+        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Yab\Quarx\QuarxProvider" --force', $this->directory);
 
         if (!$this->update) {
             $this->executeCommand('php '. $this->directory .'/artisan quarx:setup', $this->directory);
@@ -150,7 +150,7 @@ class AddCommand extends Command {
                             PHP_EOL . '        Timitek\GetRETS\Providers\GetRETSServiceProvider::class,');
         }
 
-        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRETS\Providers\GetRETSServiceProvider" --tag=config', $this->directory);
+        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRETS\Providers\GetRETSServiceProvider" --tag=config --force', $this->directory);
 
         return $this;
     }
@@ -180,8 +180,8 @@ class AddCommand extends Command {
             $this->replaceInFile('/config/quarx.php', "'frontend-theme' => 'default'", "'frontend-theme' => '../../vendor/timitek/getrealt-quarx/resources/views/theme'");
         }
 
-        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=config', $this->directory);
-        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=public', $this->directory);
+        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=config --force', $this->directory);
+        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=public --force', $this->directory);
 
         return $this;
     }
@@ -238,7 +238,7 @@ class AddCommand extends Command {
      */
     protected function verifyNewSite() {
         if ((is_dir($this->directory) || is_file($this->directory)) && $this->directory != getcwd()) {
-            throw new RuntimeException('Site already exists!  Consider using --update=true');
+            throw new RuntimeException('Site already exists!  Consider using --update');
         }
 
         return $this;
