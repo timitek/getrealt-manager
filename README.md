@@ -62,12 +62,15 @@ Then follow the prompts.
 
 To update an existing site, use the --update option.
 
-*example*
-
 ```
-getrealt add mysite --update=true
+getrealt add mysite --update
 ```
 
+If you don't want to change any of the settings during the update, but are only interested in applying updates, you can supply an answer file (typically this is the existing .env file), in order to suppress being prompted.
+
+```
+getrealt add mysite --update --answerfile=./<mysite>/.env
+```
 
 
 ## Getting Help
