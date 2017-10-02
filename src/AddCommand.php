@@ -71,7 +71,6 @@ class AddCommand extends Command {
         $this->processLaravel()
              ->saveSettings($this->settings)
              ->processQuarx()
-             ->processGetRETS()
              ->processGetRealT();
 
         $this->executeCommand('php '. $this->directory .'/artisan migrate --step', $this->directory);
@@ -110,6 +109,8 @@ class AddCommand extends Command {
 
         if ($this->update) {
             $this->executeCommand($this->composer . ' update yab/quarx --optimize-autoloader', $this->directory);
+            $this->executeCommand($this->composer . ' dump-autoload -o', $this->directory);
+            $this->executeCommand('php '. $this->directory .'/artisan optimize', $this->directory);
         }
         else {
             $this->executeCommand($this->composer . ' require yab/quarx', $this->directory);
@@ -121,36 +122,15 @@ class AddCommand extends Command {
 
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Yab\Quarx\QuarxProvider" --force', $this->directory);
 
-        if (!$this->update) {
+        if ($this->update) {
+            $this->executeCommand('npm update', $this->directory);
+        }
+        else {
             $this->executeCommand('php '. $this->directory .'/artisan quarx:setup', $this->directory);
         }
 
-        return $this;
-    }
-
-    /**
-     * Installs GetRETS
-     *
-     * @param  string  $directory
-     * @return $this
-     */
-    protected function processGetRETS() {
-        $this->output->writeln(['<comment>====================</comment>',
-                                '<info>Processing GetRETS</info>', 
-                                '<comment>====================</comment>']);
-
-        if ($this->update) {
-            $this->executeCommand($this->composer . ' update timitek/getrets-laravel --optimize-autoloader', $this->directory);
-        }
-        else {
-            $this->executeCommand($this->composer . ' require timitek/getrets-laravel', $this->directory);
-
-            $this->intoFile('/config/app.php', 
-                            'Package Service Providers...' . PHP_EOL . '         */',
-                            PHP_EOL . '        Timitek\GetRETS\Providers\GetRETSServiceProvider::class,');
-        }
-
-        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRETS\Providers\GetRETSServiceProvider" --tag=config --force', $this->directory);
+        $this->executeCommand('npm install', $this->directory);
+        $this->executeCommand('npm run dev', $this->directory);
 
         return $this;
     }
@@ -168,13 +148,11 @@ class AddCommand extends Command {
 
         if ($this->update) {
             $this->executeCommand($this->composer . ' update timitek/getrealt-quarx --optimize-autoloader', $this->directory);
+            $this->executeCommand($this->composer . ' dump-autoload -o', $this->directory);
+            $this->executeCommand('php '. $this->directory .'/artisan optimize', $this->directory);
         }
         else {
             $this->executeCommand($this->composer . ' require timitek/getrealt-quarx', $this->directory);
-
-            $this->intoFile('/config/app.php', 
-                            'Package Service Providers...' . PHP_EOL . '         */',
-                            PHP_EOL . '        Timitek\GetRealT\Providers\GetRealTServiceProvider::class,');
         }
 
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=config --force', $this->directory);
@@ -314,16 +292,21 @@ class AddCommand extends Command {
                                            'MAIL_ENCRYPTION' => 'null',
                                            'DB_HOST' => '127.0.0.1',
                                            'DB_PORT' => '3306',
-                                           'GETRETS_ENABLE_EXAMPLE' => 'false',
                                            'GETREALT_SITE_NAME' => $this->name,
                                            'GETREALT_THEME' => 'united',
                                        ], $this->loadCurrentSettings());
 
+        $settingsVerified = false;
         $answers = $this->loadAnswerFile();
         if (!empty($answers) && count($answers)) {
-            $settings = array_merge($currentSettings, $answers);
+            $currentSettings = array_merge($currentSettings, $answers);
+            if ($this->verifySettings($currentSettings)) {
+                $settingsVerified = true;
+                $settings = $currentSettings;
+            }
         }
-        else {
+
+        if (!$settingsVerified) {
             do {
                 $this->getSetting($currentSettings, 'APP_NAME', 'What is the application name you would like assigned for this site', $settings)
                     ->getSetting($currentSettings, 'APP_URL', 'What is the primary URL for your website', $settings)
@@ -340,14 +323,14 @@ class AddCommand extends Command {
                     ->getSetting($currentSettings, 'DB_DATABASE', 'What is your database name', $settings)
                     ->getSetting($currentSettings, 'DB_USERNAME', 'What is your database username', $settings)
                     ->getSetting($currentSettings, 'DB_PASSWORD', 'What is your database password', $settings)
-                    ->getSetting($currentSettings, 'GETRETS_ENABLE_EXAMPLE', 'Do you want to enable the GetRETS SDK examples for development purposes', $settings)
                     ->getSetting($currentSettings, 'GETRETS_CUSTOMER_KEY', 'What is the customer key that was assigned to you by timitek', $settings)
                     ->getSetting($currentSettings, 'GETREALT_SITE_NAME', 'What is the name you would like to use in the sites banner as the site name', $settings)
                     ->getSetting($currentSettings, 'GETREALT_THEME', 'What is the initial theme you would like to use for the site (this can be easily changed later)', $settings)
                     ->getSetting($currentSettings, 'GETREALT_MAPS_KEY', 'What is your google maps api key <info>(https://developers.google.com/maps/documentation/javascript/get-api-key)</info>', $settings)
                     ->getSetting($currentSettings, 'GETREALT_LEADS_EMAIL', 'What e-mail address do you want your leads sent too', $settings);
                 $currentSettings = $settings;
-            } while(!$this->verifySettings($settings));
+                $settingsVerified = $this->verifySettings($settings);
+            } while(!$settingsVerified);
         }
 
         return $settings;
