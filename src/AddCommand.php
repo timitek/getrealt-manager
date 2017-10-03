@@ -74,6 +74,26 @@ class AddCommand extends Command {
              ->processGetRealT();
 
         $this->executeCommand('php '. $this->directory .'/artisan migrate --step', $this->directory);
+
+        if (!$this->update) {
+            $appUrl = $this->settings['APP_URL'];
+
+            $this->output->writeln(['<comment>============================================================</comment>',
+                                    '<comment>============================================================</comment>',
+                                    '<info>Login at;</info>', 
+                                    '<info>' . $appUrl . '/login</info>', 
+                                    '<info></info>', 
+                                    '<info>Email: admin@example.com</info>', 
+                                    '<info>Password: admin</info>', 
+                                    '<info></info>', 
+                                    '<info>You may change your email and  password at;</info>', 
+                                    '<info>' . $appUrl . '/user/settings</info>', 
+                                    '<info></info>', 
+                                    '<info>You can find additional post installation instructions at;</info>', 
+                                    '<info>http://help.getrealt.com/post_installation/</info>', 
+                                    '<comment>============================================================</comment>',
+                                    '<comment>============================================================</comment>']);
+        }
     }
 
     /**
@@ -89,6 +109,14 @@ class AddCommand extends Command {
 
         if (!$this->update) {
             $this->executeCommand($this->composer . ' create-project --prefer-dist laravel/laravel ' . $this->name, $this->directory);
+
+            // Ensure the .env file exists
+            if (!file_exists($this->directory . '/.env') && file_exists($this->directory . '/.env.example')) {
+                $this->executeCommand('cp '. $this->directory .'/.env.example '. $this->directory .'/.env', $this->directory);
+            }
+
+            // Generate APP_KEY
+            $this->executeCommand('php '. $this->directory .'/artisan key:generate', $this->directory);
         }
 
         $this->replaceInFile('/config/app.php', "'name' => 'Laravel',", "'name' => '" . $this->settings['APP_NAME'] . "',");
