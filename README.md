@@ -6,7 +6,7 @@ An application installer for GetRealT.
 
 # Installing
 
-GetRealT manager utilizes Composer to install it's components.  Make sure you have composer installed before continuing.
+GetRealT manager utilizes [php 7](<http://php.net/>), [composer](<https://getcomposer.org/>) and [npm](<https://www.npmjs.com/>) to install it's components.  Make sure you have these installed installed before continuing.
 
 You can install the manager either locally and run it from the cloned repository, or globally in composers CLI tool set to make it available everywhere.
 
