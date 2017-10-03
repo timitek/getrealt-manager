@@ -183,6 +183,7 @@ class AddCommand extends Command {
             $this->executeCommand($this->composer . ' require timitek/getrealt-quarx', $this->directory);
         }
 
+        $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRETS\Providers\GetRETSServiceProvider" --tag=config --force', $this->directory);
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=config --force', $this->directory);
         $this->executeCommand('php '. $this->directory .'/artisan vendor:publish --provider="Timitek\GetRealT\Providers\GetRealTServiceProvider" --tag=public --force', $this->directory);
 
