@@ -321,8 +321,17 @@ class AddCommand extends Command {
                                            'MAIL_ENCRYPTION' => 'null',
                                            'DB_HOST' => '127.0.0.1',
                                            'DB_PORT' => '3306',
+                                           'DB_DATABASE' => 'null',
+                                           'DB_USERNAME' => 'null',
+                                           'DB_PASSWORD' => 'null',
+                                           'GETRETS_ENABLE_EXAMPLE' => 'false',
+                                           'GETRETS_CUSTOMER_KEY' => 'null',
                                            'GETREALT_SITE_NAME' => $this->name,
                                            'GETREALT_THEME' => 'united',
+                                           'GETREALT_MAPS_KEY' => 'null',
+                                           'GETREALT_LEADS_EMAIL' => 'support@timitek.com',
+                                           'GETREALT_HEADER_IMAGE_TAG' => 'none',
+                                           'GETREALT_ADVANCED_EDIT' => 'false',
                                        ], $this->loadCurrentSettings());
 
         $settingsVerified = false;
@@ -356,8 +365,10 @@ class AddCommand extends Command {
                     ->getSetting($currentSettings, 'GETREALT_SITE_NAME', 'What is the name you would like to use in the sites banner as the site name', $settings)
                     ->getSetting($currentSettings, 'GETREALT_THEME', 'What is the initial theme you would like to use for the site (this can be easily changed later)', $settings)
                     ->getSetting($currentSettings, 'GETREALT_MAPS_KEY', 'What is your google maps api key <info>(https://developers.google.com/maps/documentation/javascript/get-api-key)</info>', $settings)
-                    ->getSetting($currentSettings, 'GETREALT_LEADS_EMAIL', 'What e-mail address do you want your leads sent too', $settings);
-                $currentSettings = $settings;
+                    ->getSetting($currentSettings, 'GETREALT_LEADS_EMAIL', 'What e-mail address do you want your leads sent too', $settings)
+                    ->getSetting($currentSettings, 'GETREALT_HEADER_IMAGE_TAG', 'What images do you want to display at the top of the pages (the tag associated with the images or none to use the default abstract images)', $settings)
+                    ->getSetting($currentSettings, 'GETREALT_ADVANCED_EDIT', 'Do you want to enable the advanced editor redirecting the user to the quarx admin backend?', $settings);
+                    $currentSettings = $settings;
                 $settingsVerified = $this->verifySettings($settings);
             } while(!$settingsVerified);
         }
